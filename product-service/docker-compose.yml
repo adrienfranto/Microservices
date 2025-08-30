@@ -1,24 +1,29 @@
-version: "3.9"  # version moderne, "4" est obsolète
-
+version: "3.9"
 services:
   mongodb:
     image: mongo:7.0.5
     container_name: mongodb
+    restart: always
     ports:
       - "2717:27017"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_ROOT_USERNAME: adrien
+      MONGO_INITDB_ROOT_PASSWORD: franto
       MONGO_INITDB_ROOT_DATABASE: product-service
     volumes:
       - ./data:/data/db
 
   product-service:
-    image: product-service:latest
+    build: .
     container_name: product-service
+    restart: always
     ports:
       - "8080:8080"
-    environment:
-      SPRING_DATA_MONGODB_URI: mongodb://root:password@mongodb:27017/product-service?authSource=admin
     depends_on:
       - mongodb
+
+  mongodb2:
+    image: mongo:7.0.5
+    container_name: mongodb2
+    ports:
+      - "2717:27017"
