@@ -16,21 +16,63 @@ import java.util.List;
 public class ProductService {
     private final ProductRepository productRepository;
 
-    public ProductResponse createProduct(ProductRequest productRequest){
+    // CREATE
+    public ProductResponse createProduct(ProductRequest productRequest) {
         Product product = Product.builder()
                 .name(productRequest.name())
                 .description(productRequest.description())
                 .price(productRequest.price())
                 .build();
-        productRepository.save(product);
-        log.info("Product created successfully");
-        return new ProductResponse(product.getId(), productRequest.name(), productRequest.description(),productRequest.price());
+        product = productRepository.save(product);
+        log.info("✅ Product created: {}", product.getId());
+        return mapToResponse(product);
     }
 
-    public List<ProductResponse> getAllProduct(){
+    // READ ALL
+    public List<ProductResponse> getAllProducts() {
         return productRepository.findAll()
                 .stream()
-                .map(product -> new ProductResponse(product.getId(),product.getName(),product.getDescription(),product.getPrice()))
+                .map(this::mapToResponse)
                 .toList();
+    }
+
+    // READ BY ID
+    public ProductResponse getProductById(String id) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("❌ Product not found with id: " + id));
+        return mapToResponse(product);
+    }
+
+    // UPDATE
+    public ProductResponse updateProduct(String id, ProductRequest productRequest) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("❌ Product not found with id: " + id));
+
+        product.setName(productRequest.name());
+        product.setDescription(productRequest.description());
+        product.setPrice(productRequest.price());
+
+        product = productRepository.save(product);
+        log.info("♻️ Product updated: {}", product.getId());
+        return mapToResponse(product);
+    }
+
+    // DELETE
+    public void deleteProduct(String id) {
+        if (!productRepository.existsById(id)) {
+            throw new RuntimeException("❌ Product not found with id: " + id);
+        }
+        productRepository.deleteById(id);
+        log.info("🗑️ Product deleted: {}", id);
+    }
+
+    // MAPPER
+    private ProductResponse mapToResponse(Product product) {
+        return new ProductResponse(
+                product.getId(),
+                product.getName(),
+                product.getDescription(),
+                product.getPrice()
+        );
     }
 }
