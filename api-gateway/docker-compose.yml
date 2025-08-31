@@ -1,0 +1,13 @@
+version: "3.8"
+
+services:
+  api-gateway:
+    build: .
+    container_name: api-gateway
+    ports:
+      - "9000:9000"
+    depends_on:
+      - product-service
+      - order-service
+      - inventory-service
+    restart: always
