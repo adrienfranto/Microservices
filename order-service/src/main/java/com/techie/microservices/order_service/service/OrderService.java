@@ -1,5 +1,6 @@
 package com.techie.microservices.order_service.service;
 
+import com.techie.microservices.order_service.client.InventoryClient;
 import com.techie.microservices.order_service.dto.OrderDto;
 import com.techie.microservices.order_service.dto.OrderRequest;
 import com.techie.microservices.order_service.model.Order;
@@ -13,16 +14,26 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OrderService {
     private final OrderRepository orderRepository;
-    public void placeOrder(OrderRequest orderRequest){
-        //map OrderRequest to Order object
-        Order order = new Order();
-        order.setOrderNumber(orderRequest.orderNumber());
-        order.setPrice(orderRequest.price());
-        order.setSkuCode(orderRequest.skuCode());
-        order.setQuantity(orderRequest.quantity());
+    private final InventoryClient inventoryClient;
 
-        //save order to OrderRepository
-        orderRepository.save(order);
+    public void placeOrder(OrderRequest orderRequest) {
+
+        boolean isProductInStock = inventoryClient
+                .isInStock(orderRequest.skuCode(), orderRequest.quantity());
+
+        if (isProductInStock) {
+            Order order = new Order();
+            order.setOrderNumber(orderRequest.orderNumber());
+            order.setPrice(orderRequest.price());
+            order.setSkuCode(orderRequest.skuCode());
+            order.setQuantity(orderRequest.quantity());
+
+            orderRepository.save(order);
+        } else {
+            throw new RuntimeException(
+                    "Product with SkuCode " + orderRequest.skuCode() + " is not in stock"
+            );
+        }
     }
 
     // READ - all orders
