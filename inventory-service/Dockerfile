@@ -1,18 +1,19 @@
 # -------------------------------
 # Étape 1 : build avec Maven et JDK
 # -------------------------------
-FROM maven:3.9.2-eclipse-temurin-21 AS build
+FROM maven:3.9.8-eclipse-temurin-21 AS build
 
 WORKDIR /app
 
-# Copier tous les fichiers du projet
-COPY . .
+# Copier pom.xml d'abord pour le cache des dépendances
+COPY pom.xml ./
+RUN mvn dependency:resolve
 
-# Donner la permission au wrapper Maven (si tu l’utilises)
-RUN chmod +x mvnw
+# Copier le code source
+COPY src ./src
 
 # Compiler le projet et générer le JAR (skip tests pour gagner du temps)
-RUN ./mvnw clean package -DskipTests
+RUN mvn clean package -DskipTests
 
 # -------------------------------
 # Étape 2 : image runtime légère
