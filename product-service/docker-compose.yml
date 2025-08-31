@@ -22,8 +22,3 @@ services:
     depends_on:
       - mongodb
 
-  mongodb2:
-    image: mongo:7.0.5
-    container_name: mongodb2
-    ports:
-      - "2717:27017"
